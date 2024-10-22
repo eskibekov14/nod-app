@@ -1,70 +1,117 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { SafeAreaView, TextInput, Button, Text, StyleSheet,Image,ScrollView } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+function gcd(a: number, b: number): number {
+  // Приводим числа к положительным
+  a = Math.abs(a);
+  b = Math.abs(b);
+  
+  // Проверка на случай, если одно из чисел равно 0
+  if (a === 0) return b;
+  if (b === 0) return a;
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+  // Алгоритм Евклида
+  while (b !== 0) {
+    const temp = b;
+    b = a % b;
+    a = temp;
+  }
+  
+  return a;
 }
 
+const App: React.FC = () => {
+  const [count, setCount] = useState<string>('');
+  const [numbers, setNumbers] = useState<string[]>([]);
+  const [result, setResult] = useState<number | null>(null);
+
+  const handleCountChange = (text: string) => {
+    setCount(text);
+    
+    // Проверка на валидность введенного количества
+    const numberCount = parseInt(text);
+    if (!isNaN(numberCount) && numberCount > 0) {
+      setNumbers(Array(numberCount).fill(''));
+      setResult(null);
+    } else {
+      // Если количество недопустимо, очищаем массив
+      setNumbers([]);
+      setResult(null);
+    }
+  };
+
+  const calculateGCD = () => {
+    const parsedNumbers = numbers.map(num => parseInt(num)).filter(num => !isNaN(num));
+    if (parsedNumbers.length > 0) {
+      const initialGCD = parsedNumbers[0];
+      const finalGCD = parsedNumbers.slice(1).reduce((acc, curr) => gcd(acc, curr), initialGCD);
+      setResult(finalGCD);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <Image source={require('../../assets/images/logo-school.png')} style={styles.image} />
+      <p style={styles.centeredText}>“Д.Қонаев атындағы жалпы білім беретін орта мектеп- гимназиясы”КММ</p>
+      <p style={styles.centeredText}>Лұқпан Аяна Ибраева Томирис 5”Г”</p>
+      <p style={styles.centeredText}>Жетекшілері: А.М Ержан С.А Садуакасова</p>
+      <TextInput
+        style={styles.input}
+        placeholder="Введите количество чисел"
+        keyboardType="numeric"
+        onChangeText={handleCountChange}
+        value={count}
+      />
+      <ScrollView >
+      {numbers.map((num, index) => (
+        <TextInput
+          key={index}
+          style={styles.input}
+          placeholder={`Введите число ${index + 1}`}
+          keyboardType="numeric"
+          onChangeText={text => {
+            const newNumbers = [...numbers];
+            newNumbers[index] = text;
+            setNumbers(newNumbers);
+          }}
+          value={num}
+        />
+      ))}
+      </ScrollView>
+      <Button title="Найти НОД" onPress={calculateGCD} style={styles.input}/>
+      {result !== null && <Text style={styles.resultText}>НОД: {result}</Text>}
+    </SafeAreaView>
+  );
+};
+
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 16,
+    margin: 20,
+    alignItems: 'center'
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingHorizontal: 8,
+    width: '100%', // Установка ширины на 100%
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  image: {
+    width: 100, // Задайте нужную ширину
+    height: 100, // Задайте нужную высоту
   },
+  centeredText: {
+    textAlign: 'center', // Центрируем текст
+    fontSize: 18, // Установка размера шрифта (по желанию)
+    color: 'black', // Установка цвета текста (по желанию)
+  },
+  resultText: {
+    fontWeight: 'bold'
+  }
 });
+
+export default App;
